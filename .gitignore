@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+
+node_modules/
+dist/
+build/
+
+*.log
+.DS_Store
+Thumbs.db
+
+audit/baseline/*.html
+audit/baseline/*.json
+audit/final/*.html
+audit/final/*.json
