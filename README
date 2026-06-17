@@ -1,0 +1,41 @@
+# Insofix Development Website
+
+This repository is the development and testing version of the Insofix Ltd website.
+
+## Site type
+
+Static HTML and CSS website.
+
+## Local preview
+
+Run from the repository root:
+
+python3 -m http.server 4173
+
+Then open:
+
+http://localhost:4173
+
+## Public pages
+
+- index.html
+- contact.html
+- mortgage-problem.html
+- removal-process.html
+- superfoil.html
+
+## Deployment
+
+GitHub Pages deploys from:
+
+- Branch: main
+- Folder: /(root)
+
+All changes must be made through a task branch and pull request.
+
+## Safety
+
+- Do not modify the production Insofix website.
+- Do not add passwords, API keys or customer data.
+- Do not merge automatically.
+- Do not change the custom domain without approval.
