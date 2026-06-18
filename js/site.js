@@ -36,6 +36,6 @@ if (form) {
     }
     form.querySelectorAll('[aria-invalid="true"]').forEach((field) => field.removeAttribute('aria-invalid'));
     summary.hidden = true;
-    status.textContent = 'No information was transmitted. A secure form backend is required before enquiries or uploads can be sent.';
+    status.textContent = 'No information was transmitted. Online submission is still being configured, so please do not enter or upload personal documents yet.';
   });
 }

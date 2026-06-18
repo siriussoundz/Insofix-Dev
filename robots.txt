@@ -1,3 +1,2 @@
 User-agent: *
-Allow: /
-Sitemap: https://www.example-production-domain-required.co.uk/sitemap.xml
+Disallow: /
