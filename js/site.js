@@ -67,6 +67,7 @@ if (form) {
     }
     form.querySelectorAll('[aria-invalid="true"]').forEach((field) => field.removeAttribute('aria-invalid'));
     summary.hidden = true;
-    status.textContent = 'No information was transmitted. Online submission is still being configured, so please do not enter or upload personal documents yet.';
+    status.textContent = 'This preview did not transmit any information. To start your review now, call 07526 616036 or email info@insofixltd.co.uk.';
+    status.focus();
   });
 }
