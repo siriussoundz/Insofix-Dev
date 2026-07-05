@@ -1,3 +1,30 @@
+const GA4_MEASUREMENT_ID = 'G-9JTN04LJGB';
+
+function initialiseAnalytics() {
+  if (!GA4_MEASUREMENT_ID || window.__insofixAnalyticsLoaded) return;
+  window.__insofixAnalyticsLoaded = true;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function gtag() {
+    window.dataLayer.push(arguments);
+  };
+  window.gtag('js', new Date());
+  window.gtag('config', GA4_MEASUREMENT_ID, {
+    send_page_view: true
+  });
+
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(GA4_MEASUREMENT_ID)}`;
+  document.head.appendChild(script);
+}
+
+function trackAnalyticsEvent(eventName, params = {}) {
+  if (typeof window.gtag !== 'function') return;
+  window.gtag('event', eventName, params);
+}
+
+initialiseAnalytics();
+
 const menuButton = document.querySelector('.menu-toggle');
 const nav = document.querySelector('#site-nav');
 const dropdown = document.querySelector('.nav-dropdown');
@@ -44,9 +71,24 @@ if (form) {
   const status = document.querySelector('#form-status');
   const submitButton = form.querySelector('button[type="submit"]');
   const defaultButtonText = submitButton ? submitButton.textContent : '';
+  let formStartTracked = false;
+
+  const trackFormStart = () => {
+    if (formStartTracked) return;
+    formStartTracked = true;
+    trackAnalyticsEvent('form_start', {
+      form_id: 'enquiry-form',
+      form_name: 'Free Photo Review'
+    });
+  };
+
+  form.addEventListener('focusin', trackFormStart, { once: true });
+  form.addEventListener('input', trackFormStart, { once: true });
+  form.addEventListener('change', trackFormStart, { once: true });
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    trackFormStart();
     form.querySelectorAll('.field-error').forEach((node) => node.remove());
     form.querySelectorAll('[aria-invalid="true"]').forEach((field) => field.removeAttribute('aria-invalid'));
     status.textContent = '';
@@ -87,6 +129,12 @@ if (form) {
       if (!response.ok) {
         throw new Error('The form could not be sent.');
       }
+
+      trackAnalyticsEvent('generate_lead', {
+        form_id: 'enquiry-form',
+        form_name: 'Free Photo Review',
+        lead_type: 'spray_foam_photo_review'
+      });
 
       form.reset();
       status.textContent = 'Thanks — your enquiry has been received. We’ll review the information and contact you about the most sensible next step. To include photographs or installation paperwork, email them to info@insofixltd.co.uk using your name and postcode in the subject line.';
