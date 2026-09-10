@@ -1,4 +1,32 @@
 const GA4_MEASUREMENT_ID = 'G-9JTN04LJGB';
+const CONSENT_STORAGE_KEY = 'insofix-analytics-consent';
+
+function setAnalyticsConsent(choice) {
+  const granted = choice === 'granted';
+  window.gtag('consent', 'update', {
+    analytics_storage: choice,
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied'
+  });
+  localStorage.setItem(CONSENT_STORAGE_KEY, choice);
+  document.querySelector('.cookie-banner')?.remove();
+  if (granted) {
+    trackAnalyticsEvent('consent_update', { analytics_storage: 'granted' });
+  }
+}
+
+function showConsentBanner() {
+  const banner = document.createElement('aside');
+  banner.className = 'cookie-banner';
+  banner.setAttribute('aria-label', 'Analytics cookie choices');
+  banner.innerHTML = '<p><strong>Analytics cookies</strong><br>We use Google Analytics to understand how the website is used. You can accept or reject analytics cookies. <a href="privacy.html">Privacy notice</a></p><div class="actions"><button class="button" type="button" data-consent="granted">Accept analytics</button><button class="button secondary" type="button" data-consent="denied">Reject analytics</button></div>';
+  banner.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-consent]');
+    if (button) setAnalyticsConsent(button.dataset.consent);
+  });
+  document.body.appendChild(banner);
+}
 
 function initialiseAnalytics() {
   if (!GA4_MEASUREMENT_ID || window.__insofixAnalyticsLoaded) return;
@@ -7,6 +35,17 @@ function initialiseAnalytics() {
   window.gtag = window.gtag || function gtag() {
     window.dataLayer.push(arguments);
   };
+  window.gtag('consent', 'default', {
+    analytics_storage: 'denied',
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    wait_for_update: 500
+  });
+  const savedConsent = localStorage.getItem(CONSENT_STORAGE_KEY);
+  if (savedConsent === 'granted') {
+    window.gtag('consent', 'update', { analytics_storage: 'granted' });
+  }
   window.gtag('js', new Date());
   window.gtag('config', GA4_MEASUREMENT_ID, {
     send_page_view: true
@@ -24,6 +63,20 @@ function trackAnalyticsEvent(eventName, params = {}) {
 }
 
 initialiseAnalytics();
+
+if (!localStorage.getItem(CONSENT_STORAGE_KEY)) {
+  window.addEventListener('DOMContentLoaded', showConsentBanner, { once: true });
+}
+
+document.addEventListener('click', (event) => {
+  const link = event.target.closest('a[href^="tel:"], a[href^="mailto:"]');
+  if (!link) return;
+  const isPhone = link.href.startsWith('tel:');
+  trackAnalyticsEvent(isPhone ? 'phone_click' : 'email_click', {
+    link_url: link.getAttribute('href'),
+    link_text: link.textContent.trim()
+  });
+});
 
 const menuButton = document.querySelector('.menu-toggle');
 const nav = document.querySelector('#site-nav');
