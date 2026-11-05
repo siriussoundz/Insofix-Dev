@@ -203,3 +203,41 @@ if (form) {
     }
   });
 }
+
+
+// An embedded Tally form posts a message only after a successful submission.
+// Accept messages only from our exact form iframe; never send form answers to GA4.
+const tallyPhotoReview = document.querySelector('#insofix-tally-form');
+if (tallyPhotoReview) {
+  const trackedTallySubmissions = new Set();
+
+  window.addEventListener('message', (event) => {
+    if (event.origin !== 'https://tally.so' ||
+        event.source !== tallyPhotoReview.contentWindow) return;
+
+    let message = event.data;
+    if (typeof message === 'string') {
+      try {
+        message = JSON.parse(message);
+      } catch {
+        return;
+      }
+    }
+
+    if (message?.event !== 'Tally.FormSubmitted' ||
+        !message.payload ||
+        (message.payload.formId && message.payload.formId !== 'VpjQaa')) return;
+
+    const rawSubmissionId = message.payload.id ?? message.payload.submissionId;
+    if (rawSubmissionId == null) return;
+    const submissionId = String(rawSubmissionId);
+    if (!submissionId || trackedTallySubmissions.has(submissionId)) return;
+
+    trackedTallySubmissions.add(submissionId);
+    trackAnalyticsEvent('generate_lead', {
+      form_id: 'tally-VpjQaa',
+      form_name: 'Free Photo Review',
+      lead_type: 'spray_foam_photo_review'
+    });
+  });
+}
