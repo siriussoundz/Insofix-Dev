@@ -213,22 +213,25 @@ if (tallyPhotoReview) {
 
   window.addEventListener('message', (event) => {
     if (event.origin !== 'https://tally.so' ||
-        event.source !== tallyPhotoReview.contentWindow ||
-        typeof event.data !== 'string') return;
+        event.source !== tallyPhotoReview.contentWindow) return;
 
-    let message;
-    try {
-      message = JSON.parse(event.data);
-    } catch {
-      return;
+    let message = event.data;
+    if (typeof message === 'string') {
+      try {
+        message = JSON.parse(message);
+      } catch {
+        return;
+      }
     }
 
     if (message?.event !== 'Tally.FormSubmitted' ||
-        message.payload?.formId !== 'VpjQaa') return;
+        !message.payload ||
+        (message.payload.formId && message.payload.formId !== 'VpjQaa')) return;
 
-    const submissionId = message.payload.id;
-    if (typeof submissionId !== 'string' || !submissionId ||
-        trackedTallySubmissions.has(submissionId)) return;
+    const rawSubmissionId = message.payload.id ?? message.payload.submissionId;
+    if (rawSubmissionId == null) return;
+    const submissionId = String(rawSubmissionId);
+    if (!submissionId || trackedTallySubmissions.has(submissionId)) return;
 
     trackedTallySubmissions.add(submissionId);
     trackAnalyticsEvent('generate_lead', {
