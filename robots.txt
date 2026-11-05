@@ -1,4 +1,3 @@
 User-agent: *
-Disallow: /
-# Development build remains noindex until production release.
+Allow: /
 Sitemap: https://insofixltd.co.uk/sitemap.xml
